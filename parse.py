@@ -3,6 +3,7 @@ import re
 import networkx as nx
 import matplotlib.pyplot as plt
 import collections
+import shlex
 from utils import *
 
 
@@ -81,7 +82,8 @@ def process_amr_input_file(amr_file, max_sent_length, parse=False, isi=False, ja
 def process_amr_line(line):
     if '"' in line:
         final_tokens = []
-        tokens = line.split()
+        # Split with shlex to preserve quoted substrings
+        tokens = shlex.split(line, posix=False)
         for t in tokens:
             if '"' in t:
                 endpoints = [n for n in range(len(t)) if t[n] == '"']
@@ -154,6 +156,8 @@ def process_amr(amr_string, jamr=False, isi=False):
     :return: a dictionary whose keys are node ids and values are node concepts; a list of edges
     """
     amr_string = [token.lstrip('"').rstrip('"') for token in amr_string]
+    # Filter out empty strings which may occur as a tokenization quirk
+    amr_string = [token for token in amr_string if token]
     concept_dict = extract_all_concepts(amr_string)
     # concept_dict_combined = concept_dict.copy()
     concept_dict_jamr = {}
